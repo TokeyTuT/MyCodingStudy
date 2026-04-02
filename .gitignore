@@ -1,0 +1,26 @@
+# 默认忽略的文件
+/shelf/
+/workspace.xml
+# 基于编辑器的 HTTP 客户端请求
+/httpRequests/
+# Datasource local storage ignored files
+/dataSources/
+/dataSources.local.xml
+
+# 环境变量文件
+.env
+.env.local
+
+# IntelliJ IDEA 配置文件
+.idea/
+*.iml
+out/
+gen/
+
+# macOS 系统文件 (M3 Pro 产生的)
+.DS_Store
+
+# 编译出的字节码或可执行文件
+*.class
+*.exe
+*.o
