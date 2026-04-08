@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     "/Users/tuttokey/c++/队列的运用--打印二项式系数/main"
+relocations:     []
+...
