@@ -146,7 +146,7 @@ desc 表名
 
 
 
-### SQL 中的数据类型
+### MySQL 中的数据类型
 
 *   整数：tinyint、smallint、mediumint、int、bigint
 *   小数：decimal、double、float
