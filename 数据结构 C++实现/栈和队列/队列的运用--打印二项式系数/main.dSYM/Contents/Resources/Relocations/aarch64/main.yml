@@ -1,5 +1,5 @@
 ---
 triple:          'arm64-apple-darwin'
-binary-path:     "/Users/tuttokey/c++/队列的运用--打印二项式系数/main"
+binary-path:     "/Users/tuttokey/Documents/我的编程史/数据结构 C++实现/栈和队列/队列的运用--打印二项式系数/main"
 relocations:     []
 ...

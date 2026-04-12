@@ -1,5 +1,5 @@
 #include <queue>
-#include <vector>
+#include <vectxor>
 #include <iostream>
 // 二项式系数可以由杨辉三角形推出
 

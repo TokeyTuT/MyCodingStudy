@@ -7,7 +7,7 @@ class Qunue
 {
 public:
     Qunue();
-    Qunue(const Qunue &);
+    Qunue(const Qunue & q);
     // 析构函数
     ~Qunue() { this->makeEmpty(); }
     bool isFull() { return (rear + 1) % MAX_SIZE == front; }
