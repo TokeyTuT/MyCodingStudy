@@ -194,7 +194,7 @@ $$
 *   *min*–> 区间最小值
 *   *max*–> 区间最大值
 
-**弊端**：
+	**弊端**：
 	容易受到最大值和最小值的影响，所以他一般用于处理 **小数据集**
 
 
@@ -245,3 +245,116 @@ print(transfer.var_) #  方差
 print(transfer.scale_) # 标准差
 ```
 
+## 案例 —— 鸢尾花分析
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split    # 分割数据集的
+from sklearn.neighbors import KNeighborsClassifier      # KNN 算法
+from sklearn.preprocessing import StandardScaler        # 数据标准化的
+from sklearn.metrics import accuracy_score              # 模型评估 ，测评模型正确性
+
+from KNN_分类思路 import estimator
+
+
+def dm_iris():
+    # 获取基本数据集
+    iris_data = load_iris()
+
+    # 将数据集拆成训练集和测试集
+    x_train,x_test,y_train,y_test = train_test_split(iris_data.data,iris_data.target,test_size=0.2)
+
+    # 数据集预处理，标准化
+    transformer = StandardScaler() # 创建标准化对象
+    # fit_transform —— 先训练再转换，一般用于处理训练集
+    x_train = transformer.fit_transform(x_train)
+    # 重复进行标准化时，常用 transform 一般对测试集使用
+    x_test = transformer.transform(x_test)
+
+    # 机器学习 —— KNN
+    # 创建模型对象
+    estimator = KNeighborsClassifier(n_neighbors=3)
+    estimator.fit(x_train,y_train)
+
+    # 预测结果
+    y_pre = estimator.predict(x_test)
+    print(y_pre)
+
+    # 自定义测试集
+    my_data = [[7.8,2.1,3.9,1.6]]
+    # 注意这里自己的数据集也要进行标准化
+    my_data = transformer.transform(my_data)
+    my_pre_proba = estimator.predict_proba(my_data)
+    print(f"模型预测各分类的概率为:{my_pre_proba}")
+
+    # 模型评估
+    # 1.直接评分，基于训练集的特征，测试集的标签
+    print(f"模型评分:{estimator.score(x_test,y_test)}")
+
+    # 2.基于测试集标签和预测结果进行评分
+    print(f"模型评分:{accuracy_score(y_test,y_pre)}") 
+	# 两种方法没有明显差异，但是建议使用下面模型进行训练
+if __name__ == '__main__':
+    dm_iris()
+```
+
+## 交叉验证和网格搜索
+
+#### 交叉验证
+
+交叉验证是一种**数据的分割方**法，将数据划分为 n 份拿一次作为测试集、其他n - 1 份做训练集
+
+验证原理：
+
+*   第一次：把第一份数据作为验证集，其他数据做训练
+*   第二次：把第二份数据作为验证集，其他数据做训练
+*   ……
+*   若使用训练集 + 验证集多次评估模型，取平均值作为模型得分
+
+#### 网格搜索
+
+KNN算法中，我们需要确定*k*，这种需要人工确定的参数叫做超参。
+
+*   为什么？
+    *   模型有很多超参数，其能力存在很大的差异。需要手动产生很多超参数组合，来训练模型
+    *   每组超参数都采用**交叉验证**评估，最后选出最优参数建立模型
+*   网格搜索是模型调参的有力工具，用来寻找最优超参数的工具
+
+### API
+
+![image-20260423184611139](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260423184611139.png)
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split, GridSearchCV  # 网格搜索 + 交叉验证
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import accuracy_score
+
+iris_data = load_iris()
+x_train,x_test,y_train,y_test = train_test_split(iris_data.data,iris_data.target,test_size=0.2)
+
+# 特征标准化
+sc = StandardScaler()
+x_train = sc.fit_transform(x_train)
+x_test = sc.transform(x_test)
+
+# 模型的训练
+# 创建 KNN 分类对象
+estimator = KNeighborsClassifier()
+# 定义字典记录超参数可能出现的值
+param_dict = [{'n_neighbors':[i for i in range(1,11)]}]
+# 交叉验证，网格搜索
+estimator = GridSearchCV(estimator, # 模型对象
+                         param_dict, # 超参数字典
+                         cv=4) # 交叉验证折数
+
+estimator.fit(x_train,y_train)
+print(f"最优评分:{estimator.best_score_}")
+print(f"最优超参组合:{estimator.best_params_}")
+print(f"最优的估计器对象:{estimator.best_estimator_}")
+print(f"具体的交叉验证结果:{estimator.cv_results_}")
+
+```
+
+>   但是这种方法得到的结果也也不是很准确，以上面的鸢尾花KNN算法为例，这里的最优超参受到折数、random_state、test_size 等影响
