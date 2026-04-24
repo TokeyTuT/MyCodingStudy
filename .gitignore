@@ -19,11 +19,20 @@
 out/
 gen/
 
-# macOS 系统文件 (M3 Pro 产生的)
+# macOS 系统文件 
 .DS_Store
+.dSYM
+
 
 # 编译出的字节码或可执行文件
 *.class
 *.exe
 *.o
+
+# 忽略机器学习的保存的模型
+*.pkl
+*.pth
+
+# 忽略文件数据
+*.csv
 

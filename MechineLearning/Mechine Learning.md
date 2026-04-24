@@ -247,6 +247,13 @@ print(transfer.scale_) # 标准差
 
 ## 案例 —— 鸢尾花分析
 
+*   如何评价一个模型的好坏？ 
+
+    >   通常有两种方式：
+    >
+    >   1.   直接评分：通过调用模型自带的函数`estimator.score(x_test,y_test)` 返回一个百分数
+    >   2.   间接评分：同意调用`from sklearn.metrics import accuracy_score`，里面有一个库函数`accuary_score(y_test,y_pre)`，注意，这里的`y_pre`是自己评估后的变量，这个函数不会自动帮你用模型预测。
+
 ```python
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split    # 分割数据集的
@@ -358,3 +365,91 @@ print(f"具体的交叉验证结果:{estimator.cv_results_}")
 ```
 
 >   但是这种方法得到的结果也也不是很准确，以上面的鸢尾花KNN算法为例，这里的最优超参受到折数、random_state、test_size 等影响
+
+## 案例 —— 手写数字识别
+
+*   数据介绍：
+
+    *   数据文件 *train.csv* 以及 *test.csv*,包含了从0～9的手绘数据的灰度图像
+    *   每个图片高 28 像素、宽 28 像素，一共784个像素
+    *   每个像素取值范围为[0,255]，取值越大意味着颜色越深
+    *   训练数据集( *train.csv* )一共785列
+        *   第一列为标签，为该列对应的手写数字。
+        *   其余列代表该图像的像素值
+    *   训练集中的特征名称均有*pixel*前缀，后缀数字([0,783])代表了该像素的序号
+
+*   如何保存模型？
+
+    >   在实际开发中，我们不可能每次运行时都构建一次模型，这太浪费性能了，所以我们要将训练的模型保存下来，以便下次直接调用。
+
+    *   借用 Python 中的库`joblib`
+
+        ```python
+        # 模型保存
+        # 参数1 ： 模型对象
+        # 参数2 ： 文件路径
+        joblib.dump(estimator,'./_my_knn_model/手写数字识别.pkl')
+        # pkl ———— Python(Pandas) 独有的文件类型
+        ```
+* 使用模型
+  
+  >   既然我们已经训练了模型，那么我们如何通过我们训练的模型来识别图片中的手写数字呢？
+
+  
+
+```python
+import matplotlib.pyplot as plt
+import pandas as pd
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
+from sklearn.neighbors import KNeighborsClassifier
+import joblib # 保存模型
+
+def train_data():
+    # 定义函数，训练模型，保存模型
+    df = pd.read_csv('data/手写数字识别.csv')
+    # 数据预处理
+    x = df.iloc[:,1:] # 特征列
+    y = df.iloc[:,0] # 标签列
+
+    # 对特征列进行 归一化
+    x = x / 255
+
+    # 拆分数据为测试集和训练集 —— 要保证数据均匀
+    x_train,x_test,y_train,y_test = train_test_split(x,y,
+                                                     test_size=0.2,
+                                                     random_state=114514,
+                                                     stratify=y) # 参考数据，保证数据均匀
+    estimator = KNeighborsClassifier(n_neighbors=3)
+    # 模型训练
+    estimator.fit(x_train,y_train)
+
+    # 模型评估
+    print(f"准确率:{accuracy_score(y_test,estimator.predict(x_test))}")
+
+    # 模型保存
+    joblib.dump(estimator,'./_my_knn_model/手写数字识别.pkl') # pkl ———— Python(Pandas) 独有的文件类型
+    print("模型保存成功")
+
+
+# 使用模型读取图片
+def use_model():
+    # 读取图片
+    img = plt.imread('data/demo.png') # 注意，这里的 img 会自动归一化，下面不需要再跑归一化了
+    # print(img)
+    # 绘制图片
+    plt.imshow(img)
+    plt.show()
+
+    # 加载模型
+    knn = joblib.load('./_my_knn_model/手写数字识别.pkl')
+
+    # 预测图片
+    y_read = knn.predict(img.reshape(1,-1))  # 28 * 28 -> 784
+    # reshape(1,-1)等同于 1，784，适合在不知道多少列的情况下使用
+    print(y_read)
+if __name__ == '__main__':
+    # train_data()
+    use_model()
+```
+
