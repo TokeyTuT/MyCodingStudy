@@ -786,3 +786,37 @@ w_j:=w_j-\alpha\frac{\partial}{\partial w_j}J(w_0, w_1, \dots, w_n)
 $$
 将样本代入，不断迭代，就可以求到对应最优解。
 
+
+
+## 模型评估方法
+
+*   均方误差(Mean Squared Error MSE)：
+   $$
+   MSE=\frac 1n\sum_{i=1}^n (y_i - \hat y_i)^2
+   $$
+
+    
+   
+*   平均绝对值误差(Mean Absolute Error MAE)：
+   $$
+   MAE =\frac1n\sum_{i=1}^n|y_i-\hat y_i|
+   $$
+
+*   均方根误差(Root Mean Squered Error RMSE):
+   $$
+   RMSE=\sqrt{\frac 1n\sum_{i=1}^n (y_i - \hat y_i)^2}
+   $$
+   
+
+绝大多数情况下：$RMSE > MAE$，因为 RMSE 有一个平方项，会放大误差
+
+*   MAE 和 RMSE 都能对模型进行评估
+*   RMSE 对异常值更敏感
+
+
+
+## API
+
+
+
+![image-20260426001433338](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260426001433338.png)
