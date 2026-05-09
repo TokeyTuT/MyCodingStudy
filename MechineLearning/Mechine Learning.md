@@ -589,27 +589,91 @@ $$
 
 #### 多元线性回归
 
-在多元线性回归中，对于第 $i$ 个样本：
+
+
+为了规范下面的推导过程，**我们规定**：
+
+*   训练数据一共有 m 行，每一行训练数据有 n 个特征值。
+
+*   如果我们把某一行的特征值写成一个向量 $\mathbf x_i$，这个向量按照特征值==按列排布==，而且，我们规定权重向量 $w$ 也按照==列排布==
+
+设训练数据的第 i 个样本的特征值组成的列向量$\mathbf x_{i}$为：
 $$
-\hat y_i=\sum_{j=1}^m w_jx_{ij} + b
+\mathbf x_{i} = \begin{bmatrix}
+1 &  x_{i,1} & x_{i,2}&\dots&x_{i,n}\end{bmatrix}^\top
 $$
-第$i$ 个样本的损失:
+同时，设权重向量$w$为:
 $$
-\varepsilon_i=(\hat y_i - y_i)^2=\left[\left(\sum_{j=1}^m w_jx_{ij} + b\right)-y_i\right]
+w=\begin{bmatrix}
+w_0 & w_1&w_2&\dots&w_n
+\end{bmatrix}^\top
 $$
-进一步，我们可以导出多元线性回归的损失函数:
+
+>   这里多了一个值为 1 与 $w_1$ 的分量是为了将偏置 $b$ 也加入向量运算中，其中 $w_0$ 就是我们要学习的偏置参数。
+
+所以，对于第 i 个样本，它的预测值我们可以写作：
 $$
-J(w)=\sum_{i=1}^n\sum_{j=1}^m (w_jx_{ij} + b-y_i)
+\hat y_i=w^\top \mathbf x_i
 $$
-我们可以把 $w_i$ 的集合看做向量$w^T$
+如果我们再设一个大小为 m x (n + 1) 的矩阵 $\mathbf X$ 用来储存所有的特征值，$\mathbf X$应该被描述为:
 $$
-w=(w_1,w_2,\dots,w_m)
+\mathbf X=\begin{bmatrix}
+1&x_{1,1}&x_{1,2}&\dots&x_{1,n} \\
+1&x_{2,1}&x_{2,2}&\dots&x_{2,n} \\
+\vdots&\vdots&\vdots&\ddots&\vdots\\
+1&x_{m,1}&x_{m,2}&\dots&x_{m,n} \\
+\end{bmatrix}
+= \begin{bmatrix}
+\mathbf x_1^\top\\
+\mathbf x_2^\top\\
+\vdots\\
+\mathbf x_m^\top
+\end{bmatrix}
 $$
-剩下的推导暂时pass，因为我还没学完线代
+于是，我们可以得到预测值组成的列向量 $\mathbf{\hat y}$：
+$$
+\mathbf {\hat y}=\mathbf Xw = \begin{bmatrix}
+\hat y_1&\hat y_2&\dots&\hat y_m
+\end{bmatrix}^\top
+$$
+如果我们同时设样本标签值组成的列向量 $\mathbf y$：
+$$
+\mathbf y =\begin{bmatrix}
+y_1& y_2&\dots&y_m
+\end{bmatrix}^\top
+$$
+二者相减，我们可以得到残差向量 $\mathbf {\hat e}$:
+$$
+\mathbf {\hat e}=\mathbf {y}-\mathbf {\hat y}
+$$
+于是，我们得到了多元线性回归的均方误差：
+$$
+J(w)=\|\mathbf{\hat e}\|_2 ^2= (\mathbf{X}\mathbf{w} - \mathbf{y})^\top (\mathbf{X}\mathbf{w} - \mathbf{y})
+$$
+展开，利用矩阵乘法的分配律和转置性质 $(A-B)^\top = A^\top - B^\top$：
+$$
+J(\mathbf{w}) = \mathbf{w}^\top \mathbf{X}^\top \mathbf{X} \mathbf{w} - \mathbf{w}^\top \mathbf{X}^\top \mathbf{y} - \mathbf{y}^\top \mathbf{X} \mathbf{w} + \mathbf{y}^\top \mathbf{y}
+$$
+对 $w$ 进行求导(详情见**矩阵求导术**[^1])：
+$$
+\frac{\partial J_{(w)}}{\partial w} = 2\mathbf{X}^\top \mathbf{X} \mathbf{w} - 2\mathbf{X}^\top \mathbf{y}
+$$
+
+
+如果$(\mathbf{X}^\top \mathbf{X})$可逆：
+$$
+\mathbf{w} = (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{y}
+$$
+
+>   注：这个方法有一个很严重的缺点：一定要保证$(\mathbf{X}^\top \mathbf{X})$是可逆的，也就是$(\mathbf{X}^\top \mathbf{X})$要满秩。
+>
+>   然而，现实任务中 $(\mathbf{X}^\top \mathbf{X})$ 往往不是满秩矩阵，例如在许多任务中我们会遇到大量的变量，其数目甚至超过样例数，导致 $\mathbf{X}$ 的列数多于行数，$\mathbf{X}^\top \mathbf{X}$ 显然不满秩。此时可解出多个 $\mathbf{w}$，它们都能使均方误差最小化，选择哪一个解作为输出，将由学习算法的归纳偏好决定，常见的做法是引入正则化（regularization）项。
 
 
 
-### 梯度下降法
+[^1]:矩阵求导术在本科学习没有涉及，这里只要知道两个常用的矩阵求导术即可 $\frac{\partial (\mathbf{a}^\top \mathbf{w})}{\partial \mathbf{w}} = \mathbf{a}$$\frac{\partial (\mathbf{w}^\top \mathbf{A} \mathbf{w})}{\partial \mathbf{w}} = (\mathbf{A} + \mathbf{A}^\top)\mathbf{w}$（当 $\mathbf{A}$ 为对称阵时，结果为 $2\mathbf{A}\mathbf{w}$）
+
+### 梯度下降法(*Gradient descent*)
 
 *   什么是梯度
 
@@ -620,14 +684,47 @@ $$
 
     循环迭代求当前点的梯度，更新当前的权重参数
     $$
-    \theta_{i+1}=\theta_{i}-\alpha\frac {\partial}{\partial\theta_i}J(\theta)
+    \theta_{i}:=\theta_{i}-\alpha\frac {\partial}{\partial\theta_i}J(\theta)
     $$
     其中：
 
     *   $\alpha$ 为学习率（步长）不能太大，也不能太小，机器学习中：$[0.001,0.01]$
     *   梯度是上升最快的方向，我们需要的是下降最快的方向，所以需要加负号
+    
+    **这里我我给出一元回归的梯度下降推导过程，对于多元不必掌握**：
+    
+    >   设目标函数为 $f(x)$，我们的目的就是为了寻找一个 $x$，使得$f(x)$ 的值取到最小。（注意这里的 x 并不是特征值，而是我们所说的权重，特征值已经被看作常数项或者常系数了）
+    >
+    >   假设我们当前在 $x_0$ 点，想移动一个微小的距离 $\Delta x$ 到达 $x_0 + \Delta x$。根据一阶泰勒展开公式：
+    >   $$
+    >   f(x_0 + \Delta x) \approx f(x_0) + f'(x_0) \Delta x
+    >   $$
+    >   我们的目标是每一次移动$\Delta x$后$f(x)$都更加小也就是$f(x + \Delta x) < f(x)$。
+    >
+    >   也就是说，$f'(x_0) \Delta x < 0$每一次都要成立。
+    >
+    >   为了确保这个不等式永远成立，最简单的办法就是令 $\Delta x$ 的符号与导数 $f'(x_0)$ 相反：
+    >
+    >   -   如果导数 $f'(x_0) > 0$（函数在上升），我们就让 $\Delta x$ 为负（向左走）。
+    >   -   如果导数 $f'(x_0) < 0$（函数在下降），我们就让 $\Delta x$ 为正（向右走）。
+    >
+    >   如果我们令 ：
+    >   $$
+    >   \Delta x=-\alpha f'(x)
+    >   $$
+    >   这里的 $\alpha$（学习率）是一个大于 0 的微小常数，用来控制步长
+    >
+    >   这样，我们就得到了一元函数梯度下降的公式：
+    >   $$
+    >   x_{nex} = x_{old} - \Delta x = x_{old} - \alpha f'(x)
+    >   $$
+    >   如果当$f'(x) = 0$ 时，意味着到达了极值点，x 不会再更新，算法停止收敛。
+    >
+    >   证明完毕。
+    >
+    >   对于多元线性回归，其实类似，只是把$x$ 换成了向量$w$
 
-![image-20260425163633317](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260425163633317.png)
+![](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260425163633317.png)
 
 ![image-20260425163825868](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260425163825868.png)
 
