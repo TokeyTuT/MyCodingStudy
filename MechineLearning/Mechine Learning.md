@@ -820,3 +820,246 @@ $$
 
 
 ![image-20260426001433338](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260426001433338.png)
+
+
+
+
+
+## 欠拟合和过拟合
+
+![Code_Generated_Image](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/Code_Generated_Image.png)
+
+观察上图：
+
+*   当模型简单的时候，测试误差和训练误差都很大 —— 这叫欠拟合
+*   当模型越来越复杂的时候，模型在训练集上表示不好，在测试集上表现好 —— 这叫过拟合
+*   欠拟合和过拟合在训练集误差和都比较大
+
+具体案例：
+
+```python
+from sklearn.linear_model import LinearRegression
+from matplotlib import pyplot as plt
+import numpy as np
+from sklearn.metrics import mean_squared_error
+
+# 准备数据
+
+# 指定随机种子
+np.random.seed(115)
+
+x = np.random.uniform(-3, 3, 100) # 模拟生成一百个数据
+y  = 0.5 ** x ** 2+ x + 2 + np.random.normal(0, 1,100) # 添加噪声 e
+
+
+
+estimator = LinearRegression()
+estimator.fit(x.reshape(-1, 1), y)
+
+y_predict = estimator.predict(x.reshape(-1, 1))
+
+# 模型评估
+print(f'均方误差{mean_squared_error(y, y_predict)}')
+
+# 绘制散点图
+plt.scatter(x, y)
+plt.plot(x, y_predict, color='r') # 以折线图的形式模拟预测值
+plt.show()
+```
+
+生成的图像如下：
+
+![image-20260426183854371](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260426183854371.png)
+
+可以发现，拟合出来的数据直线与原数据相差比较大，说明这个模型对测试集拟合不好。这就体现了**欠拟合**
+
+*   如何优化模型呢？
+    *   实际上，我们上面的线性回归只用了 ***x* 的一次方这一个特征**，但是我们的函数实际上是一个二次函数，我们可以考虑给测试集添加一列特征 ——  $x^2$这一个特征，进行多元线性回归
+
+```python
+def dm2():
+    # 1. 准备数据
+    np.random.seed(115)
+    x = np.random.uniform(-3, 3, 100)
+    # 模拟一个二次方程关系：y = 0.5x^2 + x + 2 + 噪声
+    y = 0.5 * x ** 2 + x + 2 + np.random.normal(0, 1, 100)
+
+    # 2. 增加特征维度 (重要：LinearRegression 要求输入是二维矩阵)
+    # 使用 np.column_stack 将 x 和 x^2 组合，形状变为 (100, 2)
+    x_features = np.column_stack([x, x ** 2])
+
+    # 3. 训练模型
+    estimator = LinearRegression()
+    estimator.fit(x_features, y)
+
+    # 4. 预测
+    y_predict = estimator.predict(x_features)
+
+    # 5. 模型评估
+    print(f'均方误差 (MSE): {mean_squared_error(y, y_predict):.4f}')
+
+    # 6. 绘制结果
+    plt.scatter(x, y, alpha=0.6, label='Original Data')
+
+    # 注意：为了让绘出的回归线平滑，需要根据 x 的大小对预测值进行排序
+    sort_idx = np.argsort(x)
+    plt.plot(x[sort_idx], y_predict[sort_idx], color='r', label='Polynomial Fit')
+
+    plt.title("Polynomial Regression (Degree 2)")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.show()
+```
+
+![image-20260426185510648](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260426185510648.png)
+
+**注意**：
+
+*   增加一列特征时，由于我们要传给模型的参数时一个(100,2)形状的数组，所以我们需要通过`np.column_stack([x, x ** 2])`对 x 进行预处理，这个函数可以直接添加一列并且将 x 转为形状为*(100,2)*的数组
+
+*   在画图前，要对数据进行索引排序 —— 因为 plt 在绘制折线图时，是直接按照(x,y)的顺序进行连线，而不会根据他的大小进行连线。
+
+至于这个排序的语法，详细讲解如下
+
+>   理解这个排序的逻辑其实非常重要，因为在绘图（Matplotlib）和数据处理（NumPy/Pandas）中，这种“通过索引排序”的操作非常常见。
+>
+>   简单来说，`np.argsort(x)` 并不直接对 `x` 进行排序，而是返回**“如果要把 `x` 排好序，索引应该是什么样子”**。
+>
+>   我们可以通过一个简单的例子拆解一下：
+>
+>   ### 1. 拆解步骤
+>
+>   假设我们有以下数据：
+>
+>   Python
+>
+>   ```
+>   x = np.array([10, 30, 20])
+>   y_predict = np.array([1, 3, 2]) # 假设这是对应的预测值
+>   ```
+>
+>   #### 第一步：获取排序索引 (`np.argsort`)
+>
+>   Python
+>
+>   ```
+>   sort_idx = np.argsort(x) 
+>   # 结果是 [0, 2, 1]
+>   # 解释：x 最小的是 10（索引0），其次是 20（索引2），最大是 30（索引1）
+>   ```
+>
+>   #### 第二步：利用索引重新排列
+>
+>   当你把这个 `sort_idx` 传回数组时，它会按照指定的顺序提取元素：
+>
+>   Python
+>
+>   ```
+>   x_sorted = x[sort_idx]         # 得到 [10, 20, 30]
+>   y_sorted = y_predict[sort_idx] # 得到 [1, 2, 3]
+>   ```
+>
+>   ------
+>
+>   ### 2. 为什么要这么做？（绘图逻辑）
+>
+>   Matplotlib 的 `plt.plot()` 是一个**“连线抽样器”**。它会按照你给出的点序列，一个接一个地连线。
+>
+>   -   **如果不排序**：如果你的 `x` 是随机的（比如 `[3, -1, 2]`），Matplotlib 会先连到 `x=3` 的点，再猛地拉回到 `x=-1`，再跳到 `x=2`。这就会导致画面上出现杂乱交叉的直线，像乱麻一样。
+>   -   **如果排序后**：点是按照从左到右（$x$ 轴从小到大）的顺序排列的，线段就会平滑地连接起来，形成我们想要的曲线。
+>
+>   ------
+>
+>   ### 3. 代码里的语法细节
+>
+>   Python
+>
+>   ```
+>   plt.plot(x[sort_idx], y_predict[sort_idx], color='r')
+>   ```
+>
+>   -   `x[sort_idx]`：确保 $x$ 轴是从坐标系左边画到右边。
+>   -   `y_predict[sort_idx]`：确保每一个 $y$ 值依然对应它原本的那个 $x$。
+
+
+
+上面的代码是正好拟合，那么过拟合的图像应该长什么样子呢？
+
+```python
+def dm3():
+    # 1. 准备数据
+    np.random.seed(115)
+    x = np.random.uniform(-3, 3, 100)
+    # 模拟一个二次方程关系：y = 0.5x^2 + x + 2 + 噪声
+    y = 0.5 * x ** 2 + x + 2 + np.random.normal(0, 1, 100)
+
+    # 2. 增加特征维度 (重要：LinearRegression 要求输入是二维矩阵)
+    # 使用 np.column_stack 将 x 和 x^2 组合，形状变为 (100, 2)
+    x_features = np.column_stack([x, x ** 2,x ** 3,x ** 4,x ** 5,x ** 6,x ** 7,x ** 8,x ** 9,x ** 10,x ** 11,x ** 12,x ** 13,x ** 14,x ** 15,x ** 16,x ** 17,x ** 18,x ** 19,x ** 20])
+
+    # 3. 训练模型
+    estimator = LinearRegression()
+    estimator.fit(x_features, y)
+
+    # 4. 预测
+    y_predict = estimator.predict(x_features)
+
+    # 5. 模型评估
+    print(f'均方误差 (MSE): {mean_squared_error(y, y_predict):.4f}')
+
+    # 6. 绘制结果
+    plt.scatter(x, y, alpha=0.6, label='Original Data')
+
+    # 注意：为了让绘出的回归线平滑，需要根据 x 的大小对预测值进行排序
+    sort_idx = np.argsort(x)
+    plt.plot(x[sort_idx], y_predict[sort_idx], color='r', label='Polynomial Fit')
+
+    plt.title("Polynomial Regression (Degree 2)")
+    plt.xlabel("x")
+    plt.ylabel("y")
+    plt.legend()
+    plt.show()
+```
+
+![image-20260426190552227](https://cdn.jsdelivr.net/gh/TokeyTuT/my-image-storage@main/img/image-20260426190552227.png)
+
+由于我们给的特征值太多了，这使得模型太过复杂，这就是过拟合
+
+
+
+## L1 和 L2 正则化
+
+线性回归中，正则化是应对模型**过拟合**的核心技术。当模型过于复杂时，正则化在损失函数中引入惩罚项，限制参数的(权重)大小
+
+#### 核心思想：结构风险最小化
+
+标准的线性回归目标是最小化经验风险：
+$$
+J_{regularized}(\theta) = \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 + \lambda \cdot \Omega(w)
+$$
+其中：
+
+*   $\lambda \to 0$：退化为普通的线性回归
+*   $\lambda \to +\infty$：参数将被压制趋向于 0，模型变得简单。
+
+
+
+*   岭回归 (Ridge Regression / L2 正则化)
+
+>   惩罚项是参数向量的 **L2 范数**（参数平方和）。
+>   $$\Omega(w) = \|w\|_2^2 = \sum_{j=1}^{m} w_j^2$$
+>
+>   -   **原理**：它会将参数推向 0，但不会使其真正等于 0。它保留了所有特征，但缩小了每个特征的影响力。
+>   -   **适用场景**：特征之间存在多重共线性，或者你认为大部分特征都对结果有贡献。
+
+*   Lasso 回归 (Least Absolute Shrinkage and Selection Operator / L1 正则化)
+
+>   惩罚项是参数向量的 **L1 范数**（参数绝对值之和）。
+>
+>   $$\Omega(w) = \|w\|_1 = \sum_{j=1}^{m} |w_j|$$
+>
+>   -   **原理**：由于 L1 范数在零点处是不可导的“尖角”，它产生的最优解往往会让很多不重要的特征系数**直接变为 0**。
+>   -   **适用场景**：**特征选择**。当你怀疑特征中存在大量冗余或无关变量时，Lasso 能帮你筛选出最重要的特征。
+
+实际应用中，还是用 L2 正则化比较多。
