@@ -152,9 +152,6 @@ int main()
     minHeap<int> myheap(arr);
     myheap.Print();
     myheap.Sort();
-        return 0;
-    }
-    // arr = Sort(myheap);
-
     return 0;
+    // arr = Sort(myheap);
 }
