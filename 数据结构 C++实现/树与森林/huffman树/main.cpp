@@ -24,7 +24,7 @@ Node *CreatHuffmanTree(const vector<char> &_char, const vector<int> &_weight)
 {
     // 初始化
     Node *newnode;
-    priority_queue<Node *, vector<Node *>, Mycomparison> pq;
+    priority_queue<Node*, vector<Node*>, Mycomparison> pq;
     for (int i = 0; i < _char.size(); i++)
     {
         newnode = new Node(_char[i], _weight[i]);

@@ -22,3 +22,35 @@ t.test(data1,data2,mu=0,alternative = "greater",conf.level = 0.9)
 t.test(data2,data1,mu=0,alternative = "less")
 
 
+bg1=c(105,135,120,145)
+bg2=c(134,110,100,144)
+
+mean(bg1)
+mean(bg2)
+
+t.test(bg1)
+t.test(bg2)
+
+t.test(bg1,bg2,mu=0,conf.level = 0.95,alternative = "greater")# true difference in means is greater than 0
+# so bg1 is stronger than bg2
+
+
+
+data = c(120,130,324,314)
+t.test(data,mu=0,conf.level=0.9)
+
+
+
+# test
+tire1=c(55,65,58,66,70)
+tire2=c(60,63,58,65)
+
+t.test(tire1,tire2,mu=0,conf.level = 0.95,alternative = "two.sided")
+0.3472 * 2
+
+
+mu1 = mean(tire1)
+mu2 = mean(tire2)
+mu = mu1 - mu2
+
+
