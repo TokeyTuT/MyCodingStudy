@@ -16,7 +16,7 @@ summary(m1)
 
 m2 = lm(mono~tar,data)
 summary(m2)
-#Residual standard error: 1.397
+#Residual standard error:/Users/tuttokey/Documents/我的编程史/R/cigar 分析.R 1.397
 # m2的Residual standard error比m1低，m2比m1更出色
 
 
@@ -34,4 +34,8 @@ cor.test(data$weight,data$nico) # p-value = 0.01236
 
 vif(m1)
 # 至少有个vif > 10,它的的结果也展现了相关性
+
+
+
+
 
